@@ -10,6 +10,13 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 
+type User = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: string;
+};
+
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -25,15 +32,12 @@ export class UsersController {
   }
 
   @Post()
-  createUser(@Body() user: { first_name: string; last_name: string; email: string }) {
+  createUser(@Body() user: User) {
     return this.usersService.createUser(user);
   }
 
   @Patch(':user_id')
-  updateUserById(
-    @Param('user_id') user_id: string,
-    @Body() user: { first_name: string; last_name: string; email: string },
-  ) {
+  updateUserById(@Param('user_id') user_id: string, @Body() user: User) {
     return this.usersService.updateUserById({ ...user, user_id });
   }
 

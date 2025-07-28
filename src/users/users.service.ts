@@ -1,66 +1,166 @@
 import { Injectable } from '@nestjs/common';
 
+type User = {
+  user_id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: string;
+};
+
 @Injectable()
 export class UsersService {
-  getUsers(role?: string): string {
-    let return_msg = 'getUsers is called.';
+  // dummy data only. should use database later.
+  private users_list: User[] = [
+    {
+      user_id: 1,
+      first_name: 'Tony',
+      last_name: 'Stark',
+      email: 't.stark@gmail.com',
+      role: 'backend',
+    },
+    {
+      user_id: 2,
+      first_name: 'Steve',
+      last_name: 'Rogers',
+      email: 's.rogers@gmail.com',
+      role: 'frontend',
+    },
+    {
+      user_id: 3,
+      first_name: 'Thor',
+      last_name: 'Odinson',
+      email: 't.odinson@gmail.com',
+      role: 'frontend',
+    },
+    {
+      user_id: 4,
+      first_name: 'Bruce',
+      last_name: 'Banner',
+      email: 'b.banner@gmail.com',
+      role: 'backend',
+    },
+    {
+      user_id: 5,
+      first_name: 'Natasha',
+      last_name: 'Romanoff',
+      email: 'n.romanoff@gmail.com',
+      role: 'frontend',
+    },
+    {
+      user_id: 6,
+      first_name: 'Clint',
+      last_name: 'Barton',
+      email: 'c.barton@gmail.com',
+      role: 'backend',
+    },
+  ];
+
+  getUsers(role?: string): User[] {
+    let get_users_result = [...this.users_list];
 
     if (role) {
-      return_msg = 'getUsers is called with role: ' + role;
+      get_users_result = get_users_result.filter((user) => {
+        return user.role === role;
+      });
     }
 
-    return return_msg;
+    return get_users_result;
   }
 
-  getUserById(user_id: string): string {
-    let return_msg = `getUserById is called with user_id: ${user_id}`;
-
+  getUserById(user_id: string): User {
     // check if user_id is a number
     try {
-      if (isNaN(Number(user_id))) {
+      const parsed_user_id = Number(user_id);
+
+      if (isNaN(parsed_user_id)) {
         throw new Error('user_id must be a number.');
       }
+
+      return this.users_list.filter(
+        (user) => user.user_id === parsed_user_id,
+      )[0];
     } catch (error) {
-      return_msg = error.message;
+      return error.message;
     }
-
-    return return_msg;
   }
 
-  createUser(user: { first_name: string; last_name: string; email: string}): string {
-    const { first_name, last_name, email } = user;
+  createUser(user: Omit<User, 'user_id'>): User {
+    const { first_name, last_name, email, role } = user;
+    const new_user: User = {
+      user_id: this.users_list.length + 1,
+      first_name,
+      last_name,
+      email,
+      role,
+    };
 
-    return `createUser is called. First Name: ${first_name}, Last Name: ${last_name}, Email: ${email}`;
+    this.users_list.push(new_user);
+
+    return new_user;
   }
 
-  updateUserById(user: { user_id: string; first_name: string; last_name: string; email: string}): string {
-    const { user_id, first_name, last_name, email } = user;
-    let return_msg = `updateUserById is called. User ID: ${user_id}, First Name: ${first_name}, Last Name: ${last_name}, Email: ${email}`;
-
+  updateUserById(user: Omit<User, 'user_id'> & { user_id: string }): User {
     // check if user_id is a number
     try {
-      if (isNaN(Number(user_id))) {
+      const { user_id, first_name, last_name, email, role } = user;
+      const parsed_user_id = Number(user_id);
+
+      if (isNaN(parsed_user_id)) {
         throw new Error('user_id must be a number.');
       }
-    } catch (error) {
-      return_msg = error.message;
-    }
 
-    return return_msg;
+      const user_index = this.users_list.findIndex(
+        (user) => user.user_id === parsed_user_id,
+      );
+
+      // user_index will be -1 if user doesn't exist
+      if (!user_index) {
+        throw new Error('User not found.');
+      }
+
+      // Update user details with condition that only update fields if passed value is not undefined
+      this.users_list[user_index] = {
+        ...this.users_list[user_index],
+        first_name: first_name
+          ? first_name
+          : this.users_list[user_index].first_name,
+        last_name: last_name
+          ? last_name
+          : this.users_list[user_index].last_name,
+        email: email ? email : this.users_list[user_index].email,
+        role: role ? role : this.users_list[user_index].role,
+      };
+
+      return this.users_list[user_index];
+    } catch (error) {
+      return error.message;
+    }
   }
 
-  deleteUserById(user_id: string): string {
-    let return_msg = `deleteUserById is called with user_id: ${user_id}`;
-
+  deleteUserById(user_id: string): User {
     // check if user_id is a number
     try {
-      if (isNaN(Number(user_id))) {
+      const parsed_user_id = Number(user_id);
+      console.log('parsed_user_id: ', parsed_user_id);
+
+      if (isNaN(parsed_user_id)) {
         throw new Error('user_id must be a number.');
       }
-    } catch (error) {
-      return_msg = error.message;
-    }
 
-    return return_msg;
+      const user_index = this.users_list.findIndex(
+        (user) => user.user_id === parsed_user_id,
+      );
+
+      // user_index will be -1 if user doesn't exist
+      if (!user_index) {
+        throw new Error('User not found.');
+      }
+
+      // Delete user
+      return this.users_list.splice(user_index, 1)[0];
+    } catch (error) {
+      return error.message;
+    }
   }
 }
