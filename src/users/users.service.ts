@@ -1,17 +1,14 @@
 import { Injectable } from '@nestjs/common';
 
-type User = {
-  user_id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  role: 'backend' | 'frontend';
-};
+// DTOs
+import { UserDto } from './dto/user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
   // dummy data only. should use database later.
-  private users_list: User[] = [
+  private users_list: UserDto[] = [
     {
       user_id: 1,
       first_name: 'Tony',
@@ -56,7 +53,7 @@ export class UsersService {
     },
   ];
 
-  getUsers(role?: string): User[] {
+  getUsers(role?: string): UserDto[] {
     let get_users_result = [...this.users_list];
 
     if (role) {
@@ -68,17 +65,10 @@ export class UsersService {
     return get_users_result;
   }
 
-  getUserById(user_id: string): User {
-    // check if user_id is a number
+  getUserById(user_id: number): UserDto {
     try {
-      const parsed_user_id = Number(user_id);
-
-      if (isNaN(parsed_user_id)) {
-        throw new Error('Invalid User ID.');
-      }
-
       const user_index = this.users_list.findIndex(
-        (user) => user.user_id === parsed_user_id,
+        (user) => user.user_id === user_id,
       );
 
       // user_index will be -1 if user doesn't exist
@@ -92,9 +82,9 @@ export class UsersService {
     }
   }
 
-  createUser(user: Omit<User, 'user_id'>): User {
+  createUser(user: CreateUserDto): UserDto {
     const { first_name, last_name, email, role } = user;
-    const new_user: User = {
+    const new_user: UserDto = {
       user_id: this.users_list.length + 1,
       first_name,
       last_name,
@@ -107,20 +97,12 @@ export class UsersService {
     return new_user;
   }
 
-  updateUserById(
-    user: Partial<Omit<User, 'user_id'>> & { user_id: string },
-  ): User {
-    // check if user_id is a number
+  updateUserById(user: UpdateUserDto): UserDto {
     try {
       const { user_id, first_name, last_name, email, role } = user;
-      const parsed_user_id = Number(user_id);
-
-      if (isNaN(parsed_user_id)) {
-        throw new Error('Invalid User ID.');
-      }
 
       const user_index = this.users_list.findIndex(
-        (user) => user.user_id === parsed_user_id,
+        (user) => user.user_id === user_id,
       );
 
       // user_index will be -1 if user doesn't exist
@@ -147,17 +129,10 @@ export class UsersService {
     }
   }
 
-  deleteUserById(user_id: string): User {
-    // check if user_id is a number
+  deleteUserById(user_id: number): UserDto {
     try {
-      const parsed_user_id = Number(user_id);
-
-      if (isNaN(parsed_user_id)) {
-        throw new Error('Invalid User ID.');
-      }
-
       const user_index = this.users_list.findIndex(
-        (user) => user.user_id === parsed_user_id,
+        (user) => user.user_id === user_id,
       );
 
       // user_index will be -1 if user doesn't exist
