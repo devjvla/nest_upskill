@@ -74,12 +74,19 @@ export class UsersService {
       const parsed_user_id = Number(user_id);
 
       if (isNaN(parsed_user_id)) {
-        throw new Error('user_id must be a number.');
+        throw new Error('Invalid User ID.');
       }
 
-      return this.users_list.filter(
+      const user_index = this.users_list.findIndex(
         (user) => user.user_id === parsed_user_id,
-      )[0];
+      );
+
+      // user_index will be -1 if user doesn't exist
+      if (user_index < 0) {
+        throw new Error('User not found.');
+      }
+
+      return this.users_list[user_index];
     } catch (error) {
       return error.message;
     }
@@ -109,7 +116,7 @@ export class UsersService {
       const parsed_user_id = Number(user_id);
 
       if (isNaN(parsed_user_id)) {
-        throw new Error('user_id must be a number.');
+        throw new Error('Invalid User ID.');
       }
 
       const user_index = this.users_list.findIndex(
@@ -146,7 +153,7 @@ export class UsersService {
       const parsed_user_id = Number(user_id);
 
       if (isNaN(parsed_user_id)) {
-        throw new Error('user_id must be a number.');
+        throw new Error('Invalid User ID.');
       }
 
       const user_index = this.users_list.findIndex(
