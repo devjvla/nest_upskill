@@ -5,7 +5,7 @@ type User = {
   first_name: string;
   last_name: string;
   email: string;
-  role: string;
+  role: 'backend' | 'frontend';
 };
 
 @Injectable()
@@ -100,7 +100,9 @@ export class UsersService {
     return new_user;
   }
 
-  updateUserById(user: Omit<User, 'user_id'> & { user_id: string }): User {
+  updateUserById(
+    user: Partial<Omit<User, 'user_id'>> & { user_id: string },
+  ): User {
     // check if user_id is a number
     try {
       const { user_id, first_name, last_name, email, role } = user;
@@ -115,7 +117,7 @@ export class UsersService {
       );
 
       // user_index will be -1 if user doesn't exist
-      if (!user_index) {
+      if (user_index < 0) {
         throw new Error('User not found.');
       }
 
@@ -142,7 +144,6 @@ export class UsersService {
     // check if user_id is a number
     try {
       const parsed_user_id = Number(user_id);
-      console.log('parsed_user_id: ', parsed_user_id);
 
       if (isNaN(parsed_user_id)) {
         throw new Error('user_id must be a number.');
@@ -153,7 +154,7 @@ export class UsersService {
       );
 
       // user_index will be -1 if user doesn't exist
-      if (!user_index) {
+      if (user_index < 0) {
         throw new Error('User not found.');
       }
 
