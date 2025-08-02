@@ -1,9 +1,12 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsNumber, MinLength } from 'class-validator';
 
 export class UserDto {
   @IsNumber()
   @IsNotEmpty()
-  user_id: number;
+  id: number;
+
+  @IsEmail()
+  email: string;
 
   @IsNotEmpty()
   first_name: string;
@@ -11,11 +14,12 @@ export class UserDto {
   @IsNotEmpty()
   last_name: string;
 
-  @IsEmail()
-  email: string;
+  @IsNotEmpty()
+  @MinLength(6)
+  password: string;
 
-  @IsEnum(['backend', 'frontend'], {
-    message: 'Invalid role.',
-  })
-  role: 'backend' | 'frontend';
+  // @IsEnum(['backend', 'frontend'], {
+  //   message: 'Invalid role.',
+  // })
+  // role: 'backend' | 'frontend';
 }

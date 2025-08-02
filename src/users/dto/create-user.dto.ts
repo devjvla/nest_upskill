@@ -1,4 +1,12 @@
-import { UserDto } from './user.dto';
-import { PartialType } from '@nestjs/mapped-types';
+import { IsNotEmpty } from 'class-validator';
+import { Match } from 'src/utils/decorators/match.decorator';
 
-export class CreateUserDto extends PartialType(UserDto) {}
+// DTOs
+import { UserDto } from './user.dto';
+import { OmitType } from '@nestjs/mapped-types';
+
+export class CreateUserDto extends OmitType(UserDto, ['id']) {
+  @IsNotEmpty()
+  @Match('password', { message: "Passwords doesn't match!" })
+  confirm_password: string;
+}

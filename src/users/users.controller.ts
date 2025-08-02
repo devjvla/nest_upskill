@@ -6,7 +6,6 @@ import {
   Body,
   Patch,
   Delete,
-  Query,
   ParseIntPipe,
   ValidationPipe,
 } from '@nestjs/common';
@@ -23,8 +22,10 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  getUsers(@Query('role') role?: 'frontend' | 'backend') {
-    return this.usersService.getUsers(role);
+  // getUsers(@Query('role') role?: 'frontend' | 'backend') {
+  getUsers() {
+    // return this.usersService.getUsers(role);
+    return this.usersService.getUsers();
   }
 
   @Get(':user_id')
@@ -33,8 +34,12 @@ export class UsersController {
   }
 
   @Post()
-  createUser(@Body(ValidationPipe) createUserDto: CreateUserDto) {
-    return this.usersService.createUser(createUserDto);
+  async createUser(@Body(ValidationPipe) createUserDto: CreateUserDto) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { confirm_password, ...user_params } = createUserDto;
+    const create_user = await this.usersService.createUser(user_params);
+
+    return create_user;
   }
 
   @Patch(':user_id')
@@ -42,7 +47,7 @@ export class UsersController {
     @Param('user_id', ParseIntPipe) user_id: number,
     @Body(ValidationPipe) user: UpdateUserDto,
   ) {
-    return this.usersService.updateUserById({ ...user, user_id });
+    return this.usersService.updateUserById({ ...user, id: user_id });
   }
 
   @Delete(':user_id')

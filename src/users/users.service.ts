@@ -1,75 +1,80 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 // DTOs
 import { UserDto } from './dto/user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
+// Entities
+import { User } from 'src/database/entities/User';
+
 @Injectable()
 export class UsersService {
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+  ) {}
+
   // dummy data only. should use database later.
   private users_list: UserDto[] = [
     {
-      user_id: 1,
+      id: 1,
+      email: 't.stark@gmail.com',
+      password: 'ironman',
       first_name: 'Tony',
       last_name: 'Stark',
-      email: 't.stark@gmail.com',
-      role: 'backend',
     },
     {
-      user_id: 2,
+      id: 2,
+      email: 's.rogers@gmail.com',
+      password: 'captainamerica',
       first_name: 'Steve',
       last_name: 'Rogers',
-      email: 's.rogers@gmail.com',
-      role: 'frontend',
     },
     {
-      user_id: 3,
+      id: 3,
+      email: 't.odinson@gmail.com',
+      password: 'pointbreak',
       first_name: 'Thor',
       last_name: 'Odinson',
-      email: 't.odinson@gmail.com',
-      role: 'frontend',
     },
     {
-      user_id: 4,
+      id: 4,
+      email: 'b.banner@gmail.com',
+      password: 'hulk',
       first_name: 'Bruce',
       last_name: 'Banner',
-      email: 'b.banner@gmail.com',
-      role: 'backend',
     },
     {
-      user_id: 5,
+      id: 5,
+      email: 'n.romanoff@gmail.com',
+      password: 'blackwidow',
       first_name: 'Natasha',
       last_name: 'Romanoff',
-      email: 'n.romanoff@gmail.com',
-      role: 'frontend',
     },
     {
-      user_id: 6,
+      id: 6,
+      email: 'c.barton@gmail.com',
+      password: 'hawkeye',
       first_name: 'Clint',
       last_name: 'Barton',
-      email: 'c.barton@gmail.com',
-      role: 'backend',
     },
   ];
 
-  getUsers(role?: string): UserDto[] {
-    let get_users_result = [...this.users_list];
+  getUsers(): UserDto[] {
+    // if (role) {
+    //   get_users_result = get_users_result.filter((user) => {
+    //     return user.role === role;
+    //   });
+    // }
 
-    if (role) {
-      get_users_result = get_users_result.filter((user) => {
-        return user.role === role;
-      });
-    }
-
-    return get_users_result;
+    return this.users_list;
   }
 
-  getUserById(user_id: number): UserDto {
+  getUserById(id: number): UserDto {
     try {
-      const user_index = this.users_list.findIndex(
-        (user) => user.user_id === user_id,
-      );
+      const user_index = this.users_list.findIndex((user) => user.id === id);
 
       // user_index will be -1 if user doesn't exist
       if (user_index < 0) {
@@ -82,28 +87,24 @@ export class UsersService {
     }
   }
 
-  createUser(user: CreateUserDto): UserDto {
-    const { first_name, last_name, email, role } = user;
-    const new_user: UserDto = {
-      user_id: this.users_list.length + 1,
-      first_name,
-      last_name,
-      email,
-      role,
-    };
+  async createUser(
+    user_params: Omit<CreateUserDto, 'confirm_password'>,
+  ): Promise<UserDto> {
+    const new_user = this.userRepository.create({
+      email: user_params.email,
+      password: user_params.password,
+      first_name: user_params.first_name,
+      last_name: user_params.last_name,
+    });
 
-    this.users_list.push(new_user);
-
-    return new_user;
+    return this.userRepository.save(new_user);
   }
 
   updateUserById(user: UpdateUserDto): UserDto {
     try {
-      const { user_id, first_name, last_name, email, role } = user;
+      const { id, first_name, last_name, email } = user;
 
-      const user_index = this.users_list.findIndex(
-        (user) => user.user_id === user_id,
-      );
+      const user_index = this.users_list.findIndex((user) => user.id === id);
 
       // user_index will be -1 if user doesn't exist
       if (user_index < 0) {
@@ -120,7 +121,6 @@ export class UsersService {
           ? last_name
           : this.users_list[user_index].last_name,
         email: email ? email : this.users_list[user_index].email,
-        role: role ? role : this.users_list[user_index].role,
       };
 
       return this.users_list[user_index];
@@ -129,11 +129,9 @@ export class UsersService {
     }
   }
 
-  deleteUserById(user_id: number): UserDto {
+  deleteUserById(id: number): UserDto {
     try {
-      const user_index = this.users_list.findIndex(
-        (user) => user.user_id === user_id,
-      );
+      const user_index = this.users_list.findIndex((user) => user.id === id);
 
       // user_index will be -1 if user doesn't exist
       if (user_index < 0) {
