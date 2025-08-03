@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+// Helpers
+import { encryptText } from 'src/utils/helpers/auth.helper';
+
 // DTOs
 import { UserDto } from './dto/user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -16,72 +19,28 @@ export class UsersService {
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
 
-  // dummy data only. should use database later.
-  private users_list: UserDto[] = [
-    {
-      id: 1,
-      email: 't.stark@gmail.com',
-      password: 'ironman',
-      first_name: 'Tony',
-      last_name: 'Stark',
-    },
-    {
-      id: 2,
-      email: 's.rogers@gmail.com',
-      password: 'captainamerica',
-      first_name: 'Steve',
-      last_name: 'Rogers',
-    },
-    {
-      id: 3,
-      email: 't.odinson@gmail.com',
-      password: 'pointbreak',
-      first_name: 'Thor',
-      last_name: 'Odinson',
-    },
-    {
-      id: 4,
-      email: 'b.banner@gmail.com',
-      password: 'hulk',
-      first_name: 'Bruce',
-      last_name: 'Banner',
-    },
-    {
-      id: 5,
-      email: 'n.romanoff@gmail.com',
-      password: 'blackwidow',
-      first_name: 'Natasha',
-      last_name: 'Romanoff',
-    },
-    {
-      id: 6,
-      email: 'c.barton@gmail.com',
-      password: 'hawkeye',
-      first_name: 'Clint',
-      last_name: 'Barton',
-    },
-  ];
+  async getUsers(): Promise<User[]> {
+    try {
+      const get_users = await this.userRepository.find({
+        select: ['id', 'first_name', 'last_name', 'email'],
+      });
 
-  getUsers(): UserDto[] {
-    // if (role) {
-    //   get_users_result = get_users_result.filter((user) => {
-    //     return user.role === role;
-    //   });
-    // }
-
-    return this.users_list;
+      return get_users;
+    } catch (error) {
+      return error.message;
+    }
   }
 
-  getUserById(id: number): UserDto {
+  async getUserById(id: number): Promise<User> {
     try {
-      const user_index = this.users_list.findIndex((user) => user.id === id);
+      const get_user = await this.userRepository.findOne({ where: { id } });
 
-      // user_index will be -1 if user doesn't exist
-      if (user_index < 0) {
+      // get_user will be null if no record from database is fetched.
+      if (!get_user) {
         throw new Error('User not found.');
       }
 
-      return this.users_list[user_index];
+      return get_user;
     } catch (error) {
       return error.message;
     }
@@ -90,56 +49,58 @@ export class UsersService {
   async createUser(
     user_params: Omit<CreateUserDto, 'confirm_password'>,
   ): Promise<UserDto> {
-    const new_user = this.userRepository.create({
-      email: user_params.email,
-      password: user_params.password,
-      first_name: user_params.first_name,
-      last_name: user_params.last_name,
-    });
-
-    return this.userRepository.save(new_user);
-  }
-
-  updateUserById(user: UpdateUserDto): UserDto {
     try {
-      const { id, first_name, last_name, email } = user;
+      const new_user = this.userRepository.create({
+        email: user_params.email,
+        password: await encryptText(user_params.password),
+        first_name: user_params.first_name,
+        last_name: user_params.last_name,
+      });
 
-      const user_index = this.users_list.findIndex((user) => user.id === id);
-
-      // user_index will be -1 if user doesn't exist
-      if (user_index < 0) {
-        throw new Error('User not found.');
-      }
-
-      // Update user details with condition that only update fields if passed value is not undefined
-      this.users_list[user_index] = {
-        ...this.users_list[user_index],
-        first_name: first_name
-          ? first_name
-          : this.users_list[user_index].first_name,
-        last_name: last_name
-          ? last_name
-          : this.users_list[user_index].last_name,
-        email: email ? email : this.users_list[user_index].email,
-      };
-
-      return this.users_list[user_index];
+      return await this.userRepository.save(new_user);
     } catch (error) {
       return error.message;
     }
   }
 
-  deleteUserById(id: number): UserDto {
+  async updateUserById(user: UpdateUserDto): Promise<User> {
     try {
-      const user_index = this.users_list.findIndex((user) => user.id === id);
+      const { id, first_name, last_name, email } = user;
 
-      // user_index will be -1 if user doesn't exist
-      if (user_index < 0) {
+      const get_user = await this.userRepository.findOne({ where: { id } });
+
+      // get_user will be null if no record from database is fetched.
+      if (!get_user) {
+        throw new Error('User not found.');
+      }
+
+      // Update user details with condition that only update fields if passed value is not undefined
+      get_user.first_name = first_name ? first_name : get_user.first_name;
+      get_user.last_name = last_name ? last_name : get_user.last_name;
+      get_user.email = email ? email : get_user.email;
+      get_user.updated_at = new Date();
+
+      await this.userRepository.save(get_user);
+
+      return get_user;
+    } catch (error) {
+      return error.message;
+    }
+  }
+
+  async deleteUserById(id: number): Promise<User> {
+    try {
+      const get_user = await this.userRepository.findOne({ where: { id } });
+
+      // get_user will be null if no record from database is fetched.
+      if (!get_user) {
         throw new Error('User not found.');
       }
 
       // Delete user
-      return this.users_list.splice(user_index, 1)[0];
+      await this.userRepository.delete(id);
+
+      return get_user;
     } catch (error) {
       return error.message;
     }
