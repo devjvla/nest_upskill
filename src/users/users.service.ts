@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+// Helpers
+import { encryptText } from 'src/utils/helpers/auth.helper';
+
 // DTOs
 import { UserDto } from './dto/user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -90,14 +93,18 @@ export class UsersService {
   async createUser(
     user_params: Omit<CreateUserDto, 'confirm_password'>,
   ): Promise<UserDto> {
-    const new_user = this.userRepository.create({
-      email: user_params.email,
-      password: user_params.password,
-      first_name: user_params.first_name,
-      last_name: user_params.last_name,
-    });
+    try {
+      const new_user = this.userRepository.create({
+        email: user_params.email,
+        password: await encryptText(user_params.password),
+        first_name: user_params.first_name,
+        last_name: user_params.last_name,
+      });
 
-    return this.userRepository.save(new_user);
+      return await this.userRepository.save(new_user);
+    } catch (error) {
+      return error.message;
+    }
   }
 
   updateUserById(user: UpdateUserDto): UserDto {
