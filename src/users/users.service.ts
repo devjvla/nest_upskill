@@ -65,7 +65,7 @@ export class UsersService {
 
   async updateUserById(user: UpdateUserDto): Promise<User> {
     try {
-      const { id, first_name, last_name, email } = user;
+      const { id, ...user_params } = user;
 
       const get_user = await this.userRepository.findOne({ where: { id } });
 
@@ -75,14 +75,13 @@ export class UsersService {
       }
 
       // Update user details with condition that only update fields if passed value is not undefined
-      get_user.first_name = first_name ? first_name : get_user.first_name;
-      get_user.last_name = last_name ? last_name : get_user.last_name;
-      get_user.email = email ? email : get_user.email;
-      get_user.updated_at = new Date();
+      const updated_at = new Date();
+      await this.userRepository.update(id, {
+        ...user_params,
+        updated_at,
+      });
 
-      await this.userRepository.save(get_user);
-
-      return get_user;
+      return { ...get_user, ...user_params, updated_at };
     } catch (error) {
       return error.message;
     }
