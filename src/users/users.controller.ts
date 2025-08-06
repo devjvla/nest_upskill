@@ -13,11 +13,12 @@ import {
 } from '@nestjs/common';
 
 // DTOs
-import { CreateUserDto } from './dto/create-user.dto';
+import { UserSignUpDto } from './dto/user-signup.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 // Services
 import { UsersService } from './users.service';
+import { UserSignInDto } from './dto/user-signin.dto';
 
 @Controller('users')
 export class UsersController {
@@ -28,15 +29,10 @@ export class UsersController {
     return this.usersService.getUsers();
   }
 
-  @Get(':user_id')
-  async getUserById(@Param('user_id', ParseIntPipe) user_id: number) {
-    return await this.usersService.getUserById(user_id);
-  }
-
   @Post('signup')
-  async createUser(@Body(ValidationPipe) createUserDto: CreateUserDto) {
+  async userSignUp(@Body(ValidationPipe) userSignUpDto: UserSignUpDto) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { confirm_password, ...user_params } = createUserDto;
+    const { confirm_password, ...user_params } = userSignUpDto;
 
     const user_signup = await this.usersService.userSignUp(user_params);
 
@@ -48,6 +44,11 @@ export class UsersController {
     }
 
     return user_signup;
+  }
+
+  @Post('signin')
+  async userSignIn(@Body(ValidationPipe) userSignIn: UserSignInDto) {
+    return await this.usersService.userSignIn(userSignIn);
   }
 
   @Patch(':user_id')
