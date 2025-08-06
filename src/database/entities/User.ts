@@ -2,8 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
+// Entities
+import { Profile } from './Profile';
 
 @Entity({ name: 'users' })
 export class User {
@@ -27,4 +32,8 @@ export class User {
 
   @CreateDateColumn()
   updated_at: Date;
+
+  @OneToOne(() => Profile)
+  @JoinColumn()
+  profile: Profile;
 }

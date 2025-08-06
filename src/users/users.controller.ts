@@ -22,9 +22,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  // getUsers(@Query('role') role?: 'frontend' | 'backend') {
   getUsers() {
-    // return this.usersService.getUsers(role);
     return this.usersService.getUsers();
   }
 

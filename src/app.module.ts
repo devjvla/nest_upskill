@@ -13,9 +13,10 @@ import { AppController } from './app.controller';
 
 // Services
 import { AppService } from './app.service';
+import { ProfilesModule } from './profiles/profiles.module';
 
 @Module({
-  imports: [UsersModule, DatabaseModule],
+  imports: [UsersModule, DatabaseModule, ProfilesModule],
   controllers: [AppController],
   providers: [AppService],
 })
