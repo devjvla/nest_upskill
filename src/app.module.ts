@@ -7,6 +7,7 @@ import { Module } from '@nestjs/common';
 // Modules
 import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
+import { ProfilesModule } from './profiles/profiles.module';
 
 // Controllers
 import { AppController } from './app.controller';
@@ -15,7 +16,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 @Module({
-  imports: [UsersModule, DatabaseModule],
+  imports: [DatabaseModule, UsersModule, ProfilesModule],
   controllers: [AppController],
   providers: [AppService],
 })

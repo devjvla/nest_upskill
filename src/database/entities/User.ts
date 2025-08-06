@@ -2,13 +2,20 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
+// Entities
+import { Profile } from './Profile';
 
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @OneToMany(() => Profile, (profile) => profile.user)
+  profile: Profile[];
 
   @Column({ unique: true })
   email: string;

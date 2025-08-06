@@ -8,6 +8,8 @@ import {
   Delete,
   ParseIntPipe,
   ValidationPipe,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 
 // DTOs
@@ -22,9 +24,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  // getUsers(@Query('role') role?: 'frontend' | 'backend') {
   getUsers() {
-    // return this.usersService.getUsers(role);
     return this.usersService.getUsers();
   }
 
@@ -33,13 +33,21 @@ export class UsersController {
     return await this.usersService.getUserById(user_id);
   }
 
-  @Post()
+  @Post('signup')
   async createUser(@Body(ValidationPipe) createUserDto: CreateUserDto) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirm_password, ...user_params } = createUserDto;
-    const create_user = this.usersService.createUser(user_params);
 
-    return await create_user;
+    const user_signup = await this.usersService.userSignUp(user_params);
+
+    if (!user_signup.user_id) {
+      throw new HttpException(
+        user_signup as unknown as string,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return user_signup;
   }
 
   @Patch(':user_id')

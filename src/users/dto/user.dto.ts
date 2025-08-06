@@ -17,9 +17,4 @@ export class UserDto {
   @IsNotEmpty()
   @MinLength(6)
   password: string;
-
-  // @IsEnum(['backend', 'frontend'], {
-  //   message: 'Invalid role.',
-  // })
-  // role: 'backend' | 'frontend';
 }
