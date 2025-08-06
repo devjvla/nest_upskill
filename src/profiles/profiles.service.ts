@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 
 // Entities
 import { Profile } from 'src/database/entities/Profile';
+import { User } from 'src/database/entities/User';
 
 @Injectable()
 export class ProfilesService {
@@ -11,10 +12,10 @@ export class ProfilesService {
     @InjectRepository(Profile) private profileRepository: Repository<Profile>,
   ) {}
 
-  async createUserProfile(user_id: number): Promise<Profile> {
+  async createUserProfile(user: User): Promise<Profile> {
     try {
       const new_user_profile = this.profileRepository.create({
-        user: { id: user_id },
+        user,
         status: 1,
       });
 

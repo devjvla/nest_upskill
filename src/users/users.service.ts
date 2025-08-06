@@ -3,11 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 // Helpers
-import { encryptText } from 'src/utils/helpers/auth.helper';
+import { decryptText, encryptText } from 'src/utils/helpers/auth.helper';
 
 // DTOs
-import { UserDto } from './dto/user.dto';
-import { CreateUserDto } from './dto/create-user.dto';
+import { UserSignUpDto } from './dto/user-signup.dto';
+import { UserSignInDto } from './dto/user-signin.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 // Entities
@@ -52,8 +52,8 @@ export class UsersService {
   }
 
   async createUser(
-    user_params: Omit<CreateUserDto, 'confirm_password'>,
-  ): Promise<UserDto> {
+    user_params: Omit<UserSignUpDto, 'confirm_password'>,
+  ): Promise<User> {
     try {
       const new_user = this.userRepository.create({
         email: user_params.email,
@@ -116,17 +116,17 @@ export class UsersService {
    * @lastModified August 6, 2025
    */
   async userSignUp(
-    user_params: Omit<CreateUserDto, 'confirm_password'>,
+    user_signup_params: Omit<UserSignUpDto, 'confirm_password'>,
   ): Promise<UserProfileType> {
     try {
-      const create_user = await this.createUser(user_params);
+      const create_user = await this.createUser(user_signup_params);
 
       if (!create_user.id) {
         throw new Error(create_user as unknown as string);
       }
 
       // eslint-disable-next-line prettier/prettier
-      const create_user_profile = await this.profilesService.createUserProfile(create_user.id);
+      const create_user_profile = await this.profilesService.createUserProfile(create_user);
 
       if (!create_user_profile.id) {
         throw new Error(create_user_profile as unknown as string);
@@ -135,6 +135,44 @@ export class UsersService {
       return {
         user_id: create_user.id,
         user_profile_id: create_user_profile.id,
+      };
+    } catch (error) {
+      return error.message;
+    }
+  }
+
+  /**
+   * @description This function will handle fetching of User record by email and decrypting of password
+   * from database to validate user credentials.
+   * @author JV Abengona
+   * @lastModified August 6, 2025
+   */
+  async userSignIn(
+    user_signin_params: UserSignInDto,
+  ): Promise<UserProfileType> {
+    try {
+      const { email, password } = user_signin_params;
+
+      const get_user = await this.userRepository
+        .createQueryBuilder('users')
+        .innerJoinAndSelect('users.profile', 'profiles')
+        .where('users.email = :email', { email })
+        .getOne();
+
+      if (!get_user.id) {
+        throw new Error('User not found.');
+      }
+
+      // Check if password matches encrypted password in database
+      const decrypted_password = await decryptText(get_user.password);
+
+      if (decrypted_password !== password) {
+        throw new Error('Invalid email or password.');
+      }
+
+      return {
+        user_id: get_user.id,
+        user_profile_id: get_user.profile[0].id,
       };
     } catch (error) {
       return error.message;
