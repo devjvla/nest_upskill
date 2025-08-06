@@ -13,10 +13,15 @@ import { UpdateUserDto } from './dto/update-user.dto';
 // Entities
 import { User } from 'src/database/entities/User';
 
+// Services
+import { ProfilesService } from 'src/profiles/profiles.service';
+import { UserProfileType } from './user.types';
+
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    private readonly profilesService: ProfilesService,
   ) {}
 
   async getUsers(): Promise<User[]> {
@@ -100,6 +105,37 @@ export class UsersService {
       await this.userRepository.delete(id);
 
       return get_user;
+    } catch (error) {
+      return error.message;
+    }
+  }
+
+  /**
+   * @description This function will handle creation of User and Profile record.
+   * @author JV Abengona
+   * @lastModified August 6, 2025
+   */
+  async userSignUp(
+    user_params: Omit<CreateUserDto, 'confirm_password'>,
+  ): Promise<UserProfileType> {
+    try {
+      const create_user = await this.createUser(user_params);
+
+      if (!create_user.id) {
+        throw new Error(create_user as unknown as string);
+      }
+
+      // eslint-disable-next-line prettier/prettier
+      const create_user_profile = await this.profilesService.createUserProfile(create_user.id);
+
+      if (!create_user_profile.id) {
+        throw new Error(create_user_profile as unknown as string);
+      }
+
+      return {
+        user_id: create_user.id,
+        user_profile_id: create_user_profile.id,
+      };
     } catch (error) {
       return error.message;
     }

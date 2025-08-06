@@ -4,3 +4,8 @@ export type UserType = {
   email: string;
   password: string;
 };
+
+export type UserProfileType = {
+  user_id: number;
+  user_profile_id: number;
+};

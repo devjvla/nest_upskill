@@ -2,8 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
-  OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -14,6 +13,9 @@ import { Profile } from './Profile';
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @OneToMany(() => Profile, (profile) => profile.user)
+  profile: Profile[];
 
   @Column({ unique: true })
   email: string;
@@ -32,8 +34,4 @@ export class User {
 
   @CreateDateColumn()
   updated_at: Date;
-
-  @OneToOne(() => Profile)
-  @JoinColumn()
-  profile: Profile;
 }
