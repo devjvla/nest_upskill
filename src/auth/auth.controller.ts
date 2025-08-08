@@ -26,7 +26,7 @@ export class AuthController {
 
     const user_signup = await this.authService.signUp(user_params);
 
-    if (!user_signup.user_id) {
+    if (!user_signup.access_token) {
       throw new HttpException(
         user_signup as unknown as string,
         HttpStatus.BAD_REQUEST,
@@ -41,7 +41,7 @@ export class AuthController {
   async signIn(@Body(ValidationPipe) userSignInDto: UserSignInDto) {
     const user_signin = await this.authService.signIn(userSignInDto);
 
-    if (!user_signin.user_id) {
+    if (!user_signin.access_token) {
       throw new HttpException(
         user_signin as unknown as string,
         HttpStatus.UNAUTHORIZED,

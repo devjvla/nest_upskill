@@ -113,7 +113,7 @@ export class UsersService {
   /**
    * @description This function will handle creation of User and Profile record.
    * @author JV Abengona
-   * @lastModified August 6, 2025
+   * @lastModified August 8, 2025
    */
   async userSignUp(
     user_signup_params: Omit<UserSignUpDto, 'confirm_password'>,
@@ -134,6 +134,9 @@ export class UsersService {
 
       return {
         user_id: create_user.id,
+        email: create_user.email,
+        first_name: create_user.first_name,
+        last_name: create_user.last_name,
         user_profile_id: create_user_profile.id,
       };
     } catch (error) {
@@ -145,7 +148,7 @@ export class UsersService {
    * @description This function will handle fetching of User record by email and decrypting of password
    * from database to validate user credentials.
    * @author JV Abengona
-   * @lastModified August 6, 2025
+   * @lastModified August 8, 2025
    */
   async userSignIn(
     user_signin_params: UserSignInDto,
@@ -172,6 +175,9 @@ export class UsersService {
 
       return {
         user_id: get_user.id,
+        email: get_user.email,
+        first_name: get_user.first_name,
+        last_name: get_user.last_name,
         user_profile_id: get_user.profile[0].id,
       };
     } catch (error) {
