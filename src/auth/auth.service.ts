@@ -4,9 +4,6 @@ import { Injectable } from '@nestjs/common';
 import { UserSignInDto } from 'src/users/dto/user-signin.dto';
 import { UserSignUpDto } from 'src/users/dto/user-signup.dto';
 
-// Types
-import { UserProfileType } from 'src/users/user.types';
-
 // Modules
 import { JwtService } from '@nestjs/jwt';
 
@@ -24,11 +21,11 @@ export class AuthService {
    * @description This function will create User and Profile record handled by Users Module,
    * then generate a JWT with user's details then return in to the client.
    * @author JV Abengona
-   * @lastModified August 7, 2025
+   * @lastModified August 8, 2025
    */
   async signUp(
     user_signup_params: Omit<UserSignUpDto, 'confirm_password'>,
-  ): Promise<UserProfileType> {
+  ): Promise<{ access_token: string }> {
     try {
       // eslint-disable-next-line prettier/prettier
       const user_signup = await this.usersService.userSignUp(user_signup_params);
@@ -38,8 +35,12 @@ export class AuthService {
       }
 
       // Generate JWT
+      const access_token = await this.jwtService.signAsync({
+        sub: user_signup.user_id,
+        user_profile_id: user_signup.user_profile_id,
+      });
 
-      return user_signup;
+      return { access_token };
     } catch (error) {
       return error.message;
     }
@@ -49,9 +50,11 @@ export class AuthService {
    * @description This function will create User and Profile record handled by Users Module,
    * then generate a JWT with user's details then return in to the client.
    * @author JV Abengona
-   * @lastModified August 7, 2025
+   * @lastModified August 8, 2025
    */
-  async signIn(user_signin_params: UserSignInDto): Promise<UserProfileType> {
+  async signIn(
+    user_signin_params: UserSignInDto,
+  ): Promise<{ access_token: string }> {
     try {
       // eslint-disable-next-line prettier/prettier
       const user_signin = await this.usersService.userSignIn(user_signin_params);
@@ -61,8 +64,12 @@ export class AuthService {
       }
 
       // Generate JWT
+      const access_token = await this.jwtService.signAsync({
+        sub: user_signin.user_id,
+        user_profile_id: user_signin.user_profile_id,
+      });
 
-      return user_signin;
+      return { access_token };
     } catch (error) {
       return error.message;
     }

@@ -5,7 +5,7 @@ export type UserType = {
   password: string;
 };
 
-export type UserProfileType = {
+export type UserProfileType = Omit<UserType, 'password'> & {
   user_id: number;
   user_profile_id: number;
 };
