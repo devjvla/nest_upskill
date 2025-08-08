@@ -7,14 +7,19 @@ import {
   Delete,
   ParseIntPipe,
   ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
 
 // DTOs
 import { UpdateUserDto } from './dto/update-user.dto';
 
+// Guards
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+
 // Services
 import { UsersService } from './users.service';
 
+@UseGuards(AuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
