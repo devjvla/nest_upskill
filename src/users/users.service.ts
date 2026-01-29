@@ -101,7 +101,15 @@ export class UsersService {
         throw new Error('User not found.');
       }
 
-      // Delete user
+      // eslint-disable-next-line prettier/prettier
+      const get_user_profile = await this.profilesService.getProfileByUserId(id);
+
+      if (!get_user_profile) {
+        throw new Error('User profile not found.');
+      }
+
+      // Delete Profile record first before User record due to foreign key constraint
+      await this.profilesService.deleteProfileById(get_user_profile.id);
       await this.userRepository.delete(id);
 
       return get_user;
