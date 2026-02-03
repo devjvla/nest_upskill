@@ -37,6 +37,16 @@ export class UsersController {
     return await this.usersService.updateUserById({ ...user, id: user_id });
   }
 
+  @Patch('deactivate/:user_id')
+  async deactivateUser(@Param('user_id', ParseIntPipe) user_id: number) {
+    return await this.usersService.deactivateUserById(user_id, 0);
+  }
+
+  @Patch('activate/:user_id')
+  async activateUser(@Param('user_id', ParseIntPipe) user_id: number) {
+    return await this.usersService.deactivateUserById(user_id, 1);
+  }
+
   @Delete(':user_id')
   async deleteByUserId(@Param('user_id', ParseIntPipe) user_id: number) {
     return await this.usersService.deleteUserById(user_id);

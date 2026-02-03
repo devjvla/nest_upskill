@@ -16,6 +16,7 @@ import { User } from 'src/database/entities/User';
 // Services
 import { ProfilesService } from 'src/profiles/profiles.service';
 import { UserProfileType } from './user.types';
+import { Profile } from 'src/database/entities/Profile';
 
 @Injectable()
 export class UsersService {
@@ -113,6 +114,39 @@ export class UsersService {
       await this.userRepository.delete(id);
 
       return get_user;
+    } catch (error) {
+      return error.message;
+    }
+  }
+
+  async deactivateUserById(id: number, status: number): Promise<Profile> {
+    try {
+      const get_user = await this.userRepository.findOne({ where: { id } });
+
+      // get_user will be null if no record from database is fetched.
+      if (!get_user) {
+        throw new Error('User not found.');
+      }
+
+      // eslint-disable-next-line prettier/prettier
+      const get_user_profile = await this.profilesService.getProfileByUserId(id);
+
+      if (!get_user_profile) {
+        throw new Error('User profile not found.');
+      }
+
+      // eslint-disable-next-line prettier/prettier
+      const deactivate_user_profile = await this.profilesService.updateProfile({
+        ...get_user_profile,
+        status,
+      });
+
+      if (!deactivate_user_profile) {
+        // eslint-disable-next-line prettier/prettier
+        throw new Error('An error occurred while updating user profile status.');
+      }
+
+      return deactivate_user_profile;
     } catch (error) {
       return error.message;
     }
