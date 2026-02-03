@@ -24,4 +24,47 @@ export class ProfilesService {
       return error.message;
     }
   }
+
+  async getProfileByUserId(user_id: number): Promise<Profile> {
+    try {
+      return await this.profileRepository.findOne({
+        where: { user: { id: user_id } },
+      });
+    } catch (error) {
+      return error.message;
+    }
+  }
+
+  async updateProfile(user_profile: Profile): Promise<Profile> {
+    try {
+      const updated_at = new Date();
+      await this.profileRepository.update(user_profile.id, {
+        ...user_profile,
+        updated_at,
+      });
+
+      return {
+        ...user_profile,
+        updated_at,
+      };
+    } catch (error) {
+      return error.message;
+    }
+  }
+
+  async deleteProfileById(id: number): Promise<Profile> {
+    try {
+      const get_profile = await this.profileRepository.findOne({
+        where: { id },
+      });
+
+      if (!get_profile) {
+        throw new Error('User profile not found.');
+      }
+
+      await this.profileRepository.delete(id);
+    } catch (error) {
+      return error.message;
+    }
+  }
 }
